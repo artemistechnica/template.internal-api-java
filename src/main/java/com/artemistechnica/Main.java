@@ -68,8 +68,18 @@ public class Main implements Try {
                     this::mkResult
             );
 
+            Function<Context, EitherE<String>> pipelineFn2 = pipeline(
+                    List.of(
+                            step(this::preCheck),
+                            step((ctx) -> tryFn(() -> Context.mk(doWorkBad(ctx)))),
+                            step(this::postCheck)
+                    ),
+                    this::mkResult
+            );
+
             EitherE<String> result0 = pipelineFn0.apply(new Context(""));
             EitherE<String> result1 = pipelineFn1.apply(new Context(""));
+            EitherE<String> result2 = pipelineFn2.apply(new Context("Is this going to work?"));
 
         }
 
@@ -83,6 +93,10 @@ public class Main implements Try {
 
         private String doWork(Context ctx) {
             return String.format("Previous: %s\nNew: %s, Total: %s %s\n", ctx.value, "Hello, World!", ctx.value, "Hello, World!");
+        }
+
+        private String doWorkBad(Context ctx) {
+            throw new RuntimeException(String.format("ERROR!\nPrevious value: %s\nError: Method not implemented", ctx.value));
         }
 
         private String mkResult(Context ctx) {

@@ -1,13 +1,13 @@
-package com.artemistechnica.templates.internalapijava;
+package com.artemistechnica.federation;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TemplateInternalApiJavaApplication {
+public class FederationApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TemplateInternalApiJavaApplication.class, args);
+		SpringApplication.run(FederationApplication.class, args);
 	}
 
 }

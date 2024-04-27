@@ -1,1 +1,1 @@
-rootProject.name = "internal-api-java"
+rootProject.name = "federation"

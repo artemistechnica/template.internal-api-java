@@ -28,11 +28,11 @@ public interface Authorization extends Retry {
     }
 
     private EitherE<Context> preCheck(Context ctx) {
-        return retry(3, () -> ctx);
+        return retry(3, () -> { System.out.printf("Authorization pre-check"); return ctx; });
     }
 
     private EitherE<Context> postCheck(Context ctx) {
-        return retry(3, () -> ctx);
+        return retry(3, () -> { System.out.printf("Authorization post-check"); return ctx; });
     }
 
     class Context {

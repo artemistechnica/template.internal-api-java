@@ -24,11 +24,11 @@ public interface Metrics extends Retry {
     }
 
     private EitherE<Context> preCheck(Context ctx) {
-        return retry(3, () -> ctx);
+        return retry(3, () -> { System.out.printf("Metrics pre-check"); return ctx; });
     }
 
     private EitherE<Context> postCheck(Context ctx) {
-        return retry(3, () -> ctx);
+        return retry(3, () -> { System.out.printf("Metrics post-check"); return ctx; });
     }
 
     class Context {

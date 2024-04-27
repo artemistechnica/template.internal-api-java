@@ -2,24 +2,43 @@ package com.artemistechnica;
 
 import com.artemistechnica.commons.Either;
 import com.artemistechnica.commons.utils.EitherE;
-import com.artemistechnica.commons.utils.Retry;
 import com.artemistechnica.commons.utils.Try;
+import com.artemistechnica.federation.services.Federation;
+import com.artemistechnica.federation.services.Metrics;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import static com.artemistechnica.federation.processing.Pipeline.Context;
 import static com.artemistechnica.federation.processing.Pipeline.Step.step;
 import static com.artemistechnica.federation.processing.Pipeline.pipeline;
 
 public class Main implements Try {
     public static void main(String[] args) {
         App app = new App();
-        app.doThing();
+//        app.doThing();
+
+        Function<Federation.Context, EitherE<String>> federationFn = app.federation();
+
+        Federation.Context context = new Federation.Context("App");
+
+        EitherE<String> federationResult = federationFn.apply(context);
     }
 
-    public static class App implements Retry {
+    public static class App implements Federation {
+
+        Function<Metrics.Context, EitherE<String>> metricsFn = metrics(new Metrics.Context(), c -> {
+            System.out.printf("App Metrics %s\n", c);
+            return c;
+        });
+
+        public Function<Context, EitherE<String>> federation() {
+            Federation.Context context = new Federation.Context("");
+            return federate(context, (ctx) -> {
+                metricsFn.apply(new Metrics.Context());
+                return ctx;
+            });
+        }
 
         public void doThing() {
             Either<String, Integer> e0 = Either.right(1);
@@ -32,7 +51,7 @@ public class Main implements Try {
             try {
                 Either<String, Integer> e5 = Either.<String, Integer>right(null);
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.printf("EXPECTED ERROR: %s", e.getMessage());
             }
 
             EitherE<Integer> e6 = tryFn(() -> {

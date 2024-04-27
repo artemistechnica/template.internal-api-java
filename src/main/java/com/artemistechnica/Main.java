@@ -27,17 +27,9 @@ public class Main implements Try {
 
     public static class App implements Federation {
 
-        Function<Metrics.Context, EitherE<String>> metricsFn = metrics(new Metrics.Context(), c -> {
-            System.out.printf("App Metrics %s\n", c);
-            return c;
-        });
-
         public Function<Context, EitherE<String>> federation() {
             Federation.Context context = new Federation.Context("");
-            return federate(context, (ctx) -> {
-                metricsFn.apply(new Metrics.Context());
-                return ctx;
-            });
+            return federate(context, ctx -> ctx);
         }
 
         public void doThing() {

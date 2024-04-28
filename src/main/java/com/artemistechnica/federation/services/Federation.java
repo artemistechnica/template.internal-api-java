@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 public interface Federation extends Pipeline, Authorization, Metrics {
 
-    default Function<Context, EitherE<String>> federate(Context ctx, Function<Context, Context> proxyFn) {
+    default Function<Context, EitherE<PipelineResult.Materializer<Context>>> federate(Function<Context, Context> proxyFn) {
 
         Authorization.Context authCtx = new Authorization.Context();
 
@@ -16,23 +16,23 @@ public interface Federation extends Pipeline, Authorization, Metrics {
             return c;
         });
 
-        return pipeline(
-                (c) -> "Success!",
+        return pipeline2(
                 this::preCheck,
-                (c) -> {
-                    System.out.println("Beginning Authorization");
-                    return authFn.apply(c.mkAuthContext()).map(c::setAuthValue);
-                },
-                (c) -> {
-                    System.out.println("Beginning Proxy");
-                    return proxy(c, proxyFn);
-                },
+                authorize(authFn),
+                proxy(proxyFn),
                 this::postCheck
         );
     }
 
-    default <A> EitherE<A> proxy(Context ctx, Function<Context, A> proxyFn) {
-        return retry(3, () -> proxyFn.apply(ctx));
+    private Function<Context, EitherE<Context>> authorize(Function<Authorization.Context, EitherE<String>> authFn) {
+        return (Context context) -> {
+            System.out.println("Beginning Authorization");
+            return authFn.apply(context.mkAuthContext()).map(context::setAuthValue);
+        };
+    }
+
+    default <A> Function<Context, EitherE<A>> proxy(Function<Context, A> proxyFn) {
+        return (Context context) -> retry(3, () -> proxyFn.apply(context));
     }
 
     private EitherE<Context> preCheck(Context ctx) {

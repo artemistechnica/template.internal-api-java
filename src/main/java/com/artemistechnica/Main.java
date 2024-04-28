@@ -3,6 +3,7 @@ package com.artemistechnica;
 import com.artemistechnica.commons.Either;
 import com.artemistechnica.commons.utils.EitherE;
 import com.artemistechnica.commons.utils.Try;
+import com.artemistechnica.federation.processing.Pipeline;
 import com.artemistechnica.federation.services.Federation;
 
 import java.util.List;
@@ -15,19 +16,18 @@ public class Main implements Try {
         App app = new App();
 //        app.doThing();
 
-        Function<Federation.Context, EitherE<String>> federationFn = app.federation();
+        Function<Federation.Context, EitherE<Pipeline.PipelineResult.Materializer<Federation.Context>>> federationFn = app.federate(ctx -> ctx);
 
         Federation.Context context = new Federation.Context("App");
 
-        EitherE<String> federationResult = federationFn.apply(context);
+        EitherE<String> federationResult = federationFn.apply(context).flatMapE(f -> f.materialize(c -> "Success!"));
     }
 
     public static class App implements Federation {
 
-        public Function<Context, EitherE<String>> federation() {
-            Federation.Context context = new Federation.Context("");
-            return federate(context, ctx -> ctx);
-        }
+//        public Function<Context, EitherE<PipelineResult.Materializer<Context>>> federation() {
+//            return federate(ctx -> ctx);
+//        }
 
         public void doThing() {
             Either<String, Integer> e0 = Either.right(1);

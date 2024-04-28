@@ -4,14 +4,11 @@ import com.artemistechnica.commons.Either;
 import com.artemistechnica.commons.utils.EitherE;
 import com.artemistechnica.commons.utils.Try;
 import com.artemistechnica.federation.services.Federation;
-import com.artemistechnica.federation.services.Metrics;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import static com.artemistechnica.federation.processing.Pipeline.Step.step;
-import static com.artemistechnica.federation.processing.Pipeline.pipeline;
 
 public class Main implements Try {
     public static void main(String[] args) {
@@ -59,33 +56,35 @@ public class Main implements Try {
 
 
             List<Function<Context, EitherE<Context>>> stps = List.of(
-                    step(this::preCheck),
-                    step((ctx) -> tryFn(() -> Context.mk(doWork(ctx)))),
-                    step(this::postCheck)
+                    this::preCheck,
+                    (ctx) -> tryFn(() -> Context.mk(doWork(ctx))),
+                    this::postCheck
             );
 
 
             Function<Context, EitherE<String>> pipelineFn0 = pipeline(
-                    List.of(
-                            step(this::preCheck),
-                            step((ctx) -> tryFn(() -> Context.mk(doWork(ctx)))),
-                            step(this::postCheck)
-                    ),
-                    this::mkResult
+                    this::mkResult,
+//                    List.of(
+                            this::preCheck,
+                            (ctx) -> tryFn(() -> Context.mk(doWork(ctx))),
+                            this::postCheck
+//                    ),
+//                    this::mkResult
             );
 
             Function<Context, EitherE<String>> pipelineFn1 = pipeline(
-                    stps,
-                    this::mkResult
+                    this::mkResult,
+                    stps.toArray(new Function[0])
             );
 
             Function<Context, EitherE<String>> pipelineFn2 = pipeline(
-                    List.of(
-                            step(this::preCheck),
-                            step((ctx) -> tryFn(() -> Context.mk(doWorkBad(ctx)))),
-                            step(this::postCheck)
-                    ),
-                    this::mkResult
+                    this::mkResult,
+//                    List.of(
+                            this::preCheck,
+                            (ctx) -> tryFn(() -> Context.mk(doWorkBad(ctx))),
+                            this::postCheck
+//                    ),
+//                    this::mkResult
             );
 
             EitherE<String> result0 = pipelineFn0.apply(new Context(""));

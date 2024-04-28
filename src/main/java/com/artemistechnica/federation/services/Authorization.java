@@ -2,20 +2,19 @@ package com.artemistechnica.federation.services;
 
 import com.artemistechnica.commons.utils.EitherE;
 import com.artemistechnica.commons.utils.Retry;
+import com.artemistechnica.federation.processing.Pipeline;
 
 import java.util.function.Function;
 
-import static com.artemistechnica.federation.processing.Pipeline.Step.step;
-import static com.artemistechnica.federation.processing.Pipeline.pipeline;
 
-public interface Authorization extends Retry {
+public interface Authorization extends Pipeline, Retry {
 
     default Function<Context, EitherE<String>> authorization(Context ctx, Function<Context, Context> accessFn) {
         return pipeline(
                 (c) -> "Success!",
-                step(this::preCheck),
-                step((c) -> access(c, accessFn)),
-                step(this::postCheck)
+                this::preCheck,
+                (c) -> access(c, accessFn),
+                this::postCheck
         );
     }
 
@@ -28,11 +27,11 @@ public interface Authorization extends Retry {
     }
 
     private EitherE<Context> preCheck(Context ctx) {
-        return retry(3, () -> { System.out.printf("Authorization pre-check"); return ctx; });
+        return retry(3, () -> { System.out.println("Authorization pre-check"); return ctx; });
     }
 
     private EitherE<Context> postCheck(Context ctx) {
-        return retry(3, () -> { System.out.printf("Authorization post-check"); return ctx; });
+        return retry(3, () -> { System.out.println("Authorization post-check"); return ctx; });
     }
 
     class Context {

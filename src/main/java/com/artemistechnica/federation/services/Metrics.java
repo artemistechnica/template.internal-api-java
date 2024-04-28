@@ -5,22 +5,17 @@ import com.artemistechnica.commons.utils.Retry;
 
 import java.util.function.Function;
 
-import static com.artemistechnica.federation.processing.Pipeline.Step.step;
-import static com.artemistechnica.federation.processing.Pipeline.pipeline;
-
 public interface Metrics extends Retry {
 
-    default Function<Context, EitherE<String>> metrics(Context ctx, Function<Context, Context> metricsFn) {
-        return pipeline(
-                (c) -> "Metrics Success!",
-                step(this::preCheck),
-                step((c) -> applyMetrics(c, metricsFn)),
-                step(this::postCheck)
-        );
+    default Function<Context, EitherE<Context>> metrics(Context ctx) {
+        return (c) -> applyMetrics(c);
     }
 
-    default <A> EitherE<A> applyMetrics(Context ctx, Function<Context, A> metricsFn) {
-        return retry(3, () -> metricsFn.apply(ctx));
+    default EitherE<Context> applyMetrics(Context ctx) {
+        return retry(3, () -> {
+            System.out.println("APPLYING METRICS!");
+            return ctx;
+        });
     }
 
     private EitherE<Context> preCheck(Context ctx) {

@@ -12,32 +12,35 @@ public interface Pipeline {
 
     default <A> Function<A, EitherE<PipelineResult.Materializer<A>>> pipeline(Function<A, EitherE<A>>... stages) {
         return (A ctx) -> {
+            // Wrap the stages as a lazy execution
             EitherE<Supplier<EitherE<A>>> resultE = Arrays.stream(stages)
-                    .map(fn -> Step.<A>step(fn::apply))
+                    // Wrap invocation in a [[step]] for later execution
+                    .map(this::step)
+                    // Reduce the pipeline steps into a single result
                     .reduce(
+                            // Initial accumulator
                             EitherE.success(() -> EitherE.success(ctx)),
-                            (acc, s) -> acc.map(r -> () -> r.get().flatMapE(s::apply)),
-                            (a, a2) -> a2
+                            // Accumulate
+                            (acc, step) -> acc.map(r -> () -> r.get().flatMapE(step)),
+                            // Reduce - return the last result
+                            (acc0, acc1) -> acc1
                     );
+            // Execute
             return resultE.flatMapE(fn -> fn.get().map(PipelineResult::construct));
         };
     }
 
-     class Step implements Metrics {
-
-        static <A> Function<A, EitherE<A>> step(Function<A, EitherE<A>> fn) {
-            Function<Context, EitherE<Context>> m = new Metrics() {}.metrics(new Context("PIPELINE STEP"));
-            return (A ctx) -> m.apply(new Context()).flatMapE(c -> fn.apply(ctx));
-        }
+    private <A> Function<A, EitherE<A>> step(Function<A, EitherE<A>> fn) {
+        Function<Metrics.Context, EitherE<Metrics.Context>> m = new Metrics() {}.metrics(new Metrics.Context("PIPELINE STEP"));
+        return (A ctx) -> m.apply(new Metrics.Context()).flatMapE(c -> fn.apply(ctx));
     }
 
     interface PipelineResult {
 
         class Materializer<A> implements Retry {
-
             private final A result;
 
-            public Materializer(A result) { this.result = result; }
+            private Materializer(A result) { this.result = result; }
 
             public <B> EitherE<B> materialize(Function<A, B> matFn) {
                 return retry(3, () -> matFn.apply(result));
@@ -46,16 +49,6 @@ public interface Pipeline {
 
         static <A> Materializer<A> construct(A result) {
             return new Materializer<>(result);
-        }
-    }
-
-    public static class Context {
-        public String value;
-        public Context(String value) {
-            this.value = value;
-        }
-        public static Context mk(String value) {
-            return new Context(value);
         }
     }
 }

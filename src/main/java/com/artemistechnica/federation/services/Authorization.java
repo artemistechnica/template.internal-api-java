@@ -17,10 +17,6 @@ public interface Authorization extends Pipeline, Retry {
         );
     }
 
-//    default EitherE<Context> access(Context ctx, Function<Context, Context> accessFn) {
-//        return retry(3, () -> accessFn.apply(ctx));
-//    }
-
     default <A> EitherE<A> access(Context ctx, Function<Context, A> accessFn) {
         return retry(3, () -> accessFn.apply(ctx));
     }

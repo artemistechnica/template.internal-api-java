@@ -9,14 +9,6 @@ import java.util.function.Function;
 public interface Federation extends Pipeline, Authorization, Metrics {
 
     default Function<Context, EitherE<PipelineResult.Materializer<Context>>> federate(Function<Context, Context> proxyFn) {
-
-//        Authorization.Context authCtx = new Authorization.Context("");
-
-//        Function<Authorization.Context, EitherE<PipelineResult.Materializer<Authorization.Context>>> authFn = authorization(authCtx, c -> {
-//            System.out.printf("Authorizing %s\n", c);
-//            return c;
-//        });
-
         return pipeline(
                 this::preCheck,
                 authorize(),
@@ -73,11 +65,6 @@ public interface Federation extends Pipeline, Authorization, Metrics {
             metrics = metrics.tick(value);
             return this;
         }
-
-//        public Context setAuthValue(String value) {
-//            this.authContext.value = value;
-//            return this;
-//        }
 
         public Context setAuthContext(Authorization.Context authContext) {
             this.authContext = authContext;

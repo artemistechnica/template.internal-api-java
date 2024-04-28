@@ -20,7 +20,7 @@ public class Main implements Try {
             ctx.value += "\n\t5. |X| Federation: proxy (App provided)";
             return ctx;
         });
-        Federation.Context context = new Federation.Context("App: ");
+        Federation.Context context = new Federation.Context("App Pipeline Stages: ");
         EitherE<String> federationResult = federationFn.apply(context).flatMapE(f -> f.materialize(c -> c.value));
         System.out.println(federationResult.right.get());
     }

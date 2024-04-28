@@ -34,19 +34,19 @@ public interface Pipeline {
 //        };
 //    }
 
-    default <A, B> Function<A, EitherE<B>> pipeline(Function<A, B> mapFn, Function<A, EitherE<A>>... stages) {
-        return (A ctx) -> {
-            EitherE<Supplier<EitherE<A>>> x = Arrays.stream(stages).map(fn -> Step.<A>step((c) -> fn.apply(c))).reduce(
-                    EitherE.success(() -> EitherE.success(ctx)),
-                    (acc, s) -> acc.map(r -> () -> r.get().flatMapE(c -> s.apply(c))),
-                    (a, a2) -> a2
-            );
+//    default <A, B> Function<A, EitherE<B>> pipeline(Function<A, B> mapFn, Function<A, EitherE<A>>... stages) {
+//        return (A ctx) -> {
+//            EitherE<Supplier<EitherE<A>>> x = Arrays.stream(stages).map(fn -> Step.<A>step((c) -> fn.apply(c))).reduce(
+//                    EitherE.success(() -> EitherE.success(ctx)),
+//                    (acc, s) -> acc.map(r -> () -> r.get().flatMapE(c -> s.apply(c))),
+//                    (a, a2) -> a2
+//            );
+//
+//            return (EitherE<B>) x.flatMapE(fn -> fn.get().map(c -> mapFn.apply(c)));
+//        };
+//    }
 
-            return (EitherE<B>) x.flatMapE(fn -> fn.get().map(c -> mapFn.apply(c)));
-        };
-    }
-
-    default <A> Function<A, EitherE<PipelineResult.Materializer<A>>> pipeline2(Function<A, EitherE<A>>... stages) {
+    default <A> Function<A, EitherE<PipelineResult.Materializer<A>>> pipeline(Function<A, EitherE<A>>... stages) {
         return (A ctx) -> {
             EitherE<Supplier<EitherE<A>>> resultE = Arrays.stream(stages)
                     .map(fn -> Step.<A>step((c) -> fn.apply(c)))
@@ -55,7 +55,7 @@ public interface Pipeline {
                             (acc, s) -> acc.map(r -> () -> r.get().flatMapE(c -> s.apply(c))),
                             (a, a2) -> a2
                     );
-            return resultE.flatMapE(fn -> fn.get().map(result -> PipelineResult.construct(result)));
+            return resultE.flatMapE(fn -> fn.get().map(PipelineResult::construct));
         };
     }
 

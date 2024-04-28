@@ -3,31 +3,38 @@ package com.artemistechnica.federation.services;
 import com.artemistechnica.commons.utils.EitherE;
 import com.artemistechnica.federation.processing.Pipeline;
 
+import java.util.UUID;
 import java.util.function.Function;
 
 public interface Federation extends Pipeline, Authorization, Metrics {
 
     default Function<Context, EitherE<PipelineResult.Materializer<Context>>> federate(Function<Context, Context> proxyFn) {
 
-        Authorization.Context authCtx = new Authorization.Context();
+//        Authorization.Context authCtx = new Authorization.Context("");
 
-        Function<Authorization.Context, EitherE<String>> authFn = authorization(authCtx, c -> {
-            System.out.printf("Authorizing %s\n", c);
-            return c;
-        });
+//        Function<Authorization.Context, EitherE<PipelineResult.Materializer<Authorization.Context>>> authFn = authorization(authCtx, c -> {
+//            System.out.printf("Authorizing %s\n", c);
+//            return c;
+//        });
 
-        return pipeline2(
+        return pipeline(
                 this::preCheck,
-                authorize(authFn),
+                authorize(),
                 proxy(proxyFn),
                 this::postCheck
         );
     }
 
-    private Function<Context, EitherE<Context>> authorize(Function<Authorization.Context, EitherE<String>> authFn) {
+    private Function<Context, EitherE<Context>> authorize() {
         return (Context context) -> {
             System.out.println("Beginning Authorization");
-            return authFn.apply(context.mkAuthContext()).map(context::setAuthValue);
+            Function<Authorization.Context, EitherE<PipelineResult.Materializer<Authorization.Context>>> authFn = authorization(context.authContext, c -> {
+                System.out.printf("Authorization: Authorizing (Federation Provided)%s\n", c);
+                c.value = UUID.randomUUID().toString();
+                c.logging += "\n\t3. |X| Authorization: authorizing (Federation provided)";
+                return c;
+            });
+            return authFn.apply(context.authContext).flatMapE(mat -> mat.materialize(context::setAuthContext));
         };
     }
 
@@ -38,6 +45,7 @@ public interface Federation extends Pipeline, Authorization, Metrics {
     private EitherE<Context> preCheck(Context ctx) {
         return retry(3, () -> {
             System.out.println("Federation pre-check");
+            ctx.value += "\n\t1. |X| Federation: pre-check";
             return ctx;
         });
     }
@@ -45,6 +53,7 @@ public interface Federation extends Pipeline, Authorization, Metrics {
     private EitherE<Context> postCheck(Context ctx) {
         return retry(3, () -> {
             System.out.println("Federation post-check");
+            ctx.value += "\n\t6. |X| Federation: post-check";
             return ctx;
         });
     }
@@ -54,14 +63,10 @@ public interface Federation extends Pipeline, Authorization, Metrics {
 
         public String value = "";
         public Metrics.Context metrics = new Metrics.Context();
-        public String authValue = "";
+        public Authorization.Context authContext = new Authorization.Context("");
 
         public Context(String value) {
             this.value = value;
-        }
-
-        public Authorization.Context mkAuthContext() {
-            return new Authorization.Context();
         }
 
         public Context tick(String value) {
@@ -69,8 +74,14 @@ public interface Federation extends Pipeline, Authorization, Metrics {
             return this;
         }
 
-        public Context setAuthValue(String value) {
-            this.authValue = value;
+//        public Context setAuthValue(String value) {
+//            this.authContext.value = value;
+//            return this;
+//        }
+
+        public Context setAuthContext(Authorization.Context authContext) {
+            this.authContext = authContext;
+            this.value += authContext.logging;
             return this;
         }
 

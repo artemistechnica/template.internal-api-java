@@ -16,18 +16,16 @@ public class Main implements Try {
         App app = new App();
 //        app.doThing();
 
-        Function<Federation.Context, EitherE<Pipeline.PipelineResult.Materializer<Federation.Context>>> federationFn = app.federate(ctx -> ctx);
-
-        Federation.Context context = new Federation.Context("App");
-
-        EitherE<String> federationResult = federationFn.apply(context).flatMapE(f -> f.materialize(c -> "Success!"));
+        Function<Federation.Context, EitherE<Pipeline.PipelineResult.Materializer<Federation.Context>>> federationFn = app.federate(ctx -> {
+            ctx.value += "\n\t5. |X| Federation: proxy (App provided)";
+            return ctx;
+        });
+        Federation.Context context = new Federation.Context("App: ");
+        EitherE<String> federationResult = federationFn.apply(context).flatMapE(f -> f.materialize(c -> c.value));
+        System.out.println(federationResult.right.get());
     }
 
     public static class App implements Federation {
-
-//        public Function<Context, EitherE<PipelineResult.Materializer<Context>>> federation() {
-//            return federate(ctx -> ctx);
-//        }
 
         public void doThing() {
             Either<String, Integer> e0 = Either.right(1);
@@ -62,35 +60,25 @@ public class Main implements Try {
             );
 
 
-            Function<Context, EitherE<String>> pipelineFn0 = pipeline(
-                    this::mkResult,
-//                    List.of(
-                            this::preCheck,
-                            (ctx) -> tryFn(() -> Context.mk(doWork(ctx))),
-                            this::postCheck
-//                    ),
-//                    this::mkResult
+            Function<Context, EitherE<PipelineResult.Materializer<Context>>> pipelineFn0 = pipeline(
+                    this::preCheck,
+                    (ctx) -> tryFn(() -> Context.mk(doWork(ctx))),
+                    this::postCheck
             );
 
-            Function<Context, EitherE<String>> pipelineFn1 = pipeline(
-                    this::mkResult,
-                    stps.toArray(new Function[0])
+            Function<Context, EitherE<Context>>[] arr = stps.toArray(new Function[0]);
+
+            Function<Context, EitherE<PipelineResult.Materializer<Context>>> pipelineFn1 = pipeline(arr);
+
+            Function<Context, EitherE<PipelineResult.Materializer<Context>>> pipelineFn2 = pipeline(
+                    this::preCheck,
+                    (ctx) -> tryFn(() -> Context.mk(doWorkBad(ctx))),
+                    this::postCheck
             );
 
-            Function<Context, EitherE<String>> pipelineFn2 = pipeline(
-                    this::mkResult,
-//                    List.of(
-                            this::preCheck,
-                            (ctx) -> tryFn(() -> Context.mk(doWorkBad(ctx))),
-                            this::postCheck
-//                    ),
-//                    this::mkResult
-            );
-
-            EitherE<String> result0 = pipelineFn0.apply(new Context(""));
-            EitherE<String> result1 = pipelineFn1.apply(new Context(""));
-            EitherE<String> result2 = pipelineFn2.apply(new Context("Is this going to work?"));
-
+            EitherE<String> result0 = pipelineFn0.apply(new Context("")).flatMapE(mat -> mat.materialize(c -> c.value));
+            EitherE<String> result1 = pipelineFn1.apply(new Context("")).flatMapE(mat -> mat.materialize(c -> c.value));
+            EitherE<String> result2 = pipelineFn2.apply(new Context("Is this going to work?")).flatMapE(mat -> mat.materialize(c -> c.value));;
         }
 
         private EitherE<Context> preCheck(Context ctx) {

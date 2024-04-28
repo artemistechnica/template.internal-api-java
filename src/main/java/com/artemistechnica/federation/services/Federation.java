@@ -11,23 +11,21 @@ public interface Federation extends Pipeline, Authorization, Metrics {
     default Function<Context, EitherE<PipelineResult.Materializer<Context>>> federate(Function<Context, Context> proxyFn) {
         return pipeline(
                 this::preCheck,
-                authorize(),
+                this::authorize,
                 proxy(proxyFn),
                 this::postCheck
         );
     }
 
-    private Function<Context, EitherE<Context>> authorize() {
-        return (Context context) -> {
-            System.out.println("Beginning Authorization");
-            Function<Authorization.Context, EitherE<PipelineResult.Materializer<Authorization.Context>>> authFn = authorization(context.authContext, c -> {
-                System.out.printf("Authorization: Authorizing (Federation Provided)%s\n", c);
-                c.value = UUID.randomUUID().toString();
-                c.logging += "\n\t3. |X| Authorization: authorizing (Federation provided)";
-                return c;
-            });
-            return authFn.apply(context.authContext).flatMapE(mat -> mat.materialize(context::setAuthContext));
-        };
+    private EitherE<Context> authorize(Context ctx) {
+        System.out.println("Beginning Authorization");
+        Function<Authorization.Context, EitherE<PipelineResult.Materializer<Authorization.Context>>> authFn = authorization(ctx.authContext, c -> {
+            System.out.printf("Authorization: Authorizing (Federation Provided)%s\n", c);
+            c.value = UUID.randomUUID().toString();
+            c.logging += "\n\t3. |X| Authorization: authorizing (Federation provided)";
+            return c;
+        });
+        return authFn.apply(ctx.authContext).flatMapE(mat -> mat.materialize(ctx::setAuthContext));
     }
 
     default <A> Function<Context, EitherE<A>> proxy(Function<Context, A> proxyFn) {

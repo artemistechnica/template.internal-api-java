@@ -17,7 +17,7 @@ public class Main implements Try {
 //        app.doThing();
 
         Function<Federation.Context, EitherE<Pipeline.PipelineResult.Materializer<Federation.Context>>> federationFn = app.federate(ctx -> {
-            ctx.value += "\n\t5. |X| Federation: proxy (App provided)";
+            ctx.value += "\n\t8. |X| Federation: proxy (App provided)";
             return ctx;
         });
         Federation.Context context = new Federation.Context("App Pipeline Stages: ");

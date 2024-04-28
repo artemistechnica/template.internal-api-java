@@ -6,12 +6,13 @@ import com.artemistechnica.federation.processing.Pipeline;
 import java.util.UUID;
 import java.util.function.Function;
 
-public interface Federation extends Pipeline, Authorization, Metrics {
+public interface Federation extends Pipeline, Authorization, Manager, Metrics {
 
     default Function<Context, EitherE<PipelineResult.Materializer<Context>>> federate(Function<Context, Context> proxyFn) {
         return pipeline(
                 this::preCheck,
                 this::authorize,
+                this::manage,
                 proxy(proxyFn),
                 this::postCheck
         );
@@ -26,6 +27,16 @@ public interface Federation extends Pipeline, Authorization, Metrics {
             return c;
         });
         return authFn.apply(ctx.authContext).flatMapE(mat -> mat.materialize(ctx::setAuthContext));
+    }
+
+    private EitherE<Context> manage(Context ctx) {
+        System.out.println("Beginning Managerial Duties");
+        Function<Manager.Context, EitherE<PipelineResult.Materializer<Manager.Context>>> manageFn = manage(ctx.managerContext, c -> {
+            System.out.printf("Manager: Managerial Duties (Federation Provided)%s\n", c);
+            c.logging += "\n\t6. |X| Managerial Duties: managing (Federation provided)";
+            return c;
+        });
+        return manageFn.apply(ctx.managerContext).flatMapE(mat -> mat.materialize(ctx::setManagerContext));
     }
 
     default <A> Function<Context, EitherE<A>> proxy(Function<Context, A> proxyFn) {
@@ -43,7 +54,7 @@ public interface Federation extends Pipeline, Authorization, Metrics {
     private EitherE<Context> postCheck(Context ctx) {
         return retry(3, () -> {
             System.out.println("Federation post-check");
-            ctx.value += "\n\t6. |X| Federation: post-check";
+            ctx.value += "\n\t9. |X| Federation: post-check";
             return ctx;
         });
     }
@@ -54,6 +65,7 @@ public interface Federation extends Pipeline, Authorization, Metrics {
         public String value = "";
         public Metrics.Context metrics = new Metrics.Context();
         public Authorization.Context authContext = new Authorization.Context("");
+        public Manager.Context managerContext = new Manager.Context("");
 
         public Context(String value) {
             this.value = value;
@@ -67,6 +79,12 @@ public interface Federation extends Pipeline, Authorization, Metrics {
         public Context setAuthContext(Authorization.Context authContext) {
             this.authContext = authContext;
             this.value += authContext.logging;
+            return this;
+        }
+
+        public Context setManagerContext(Manager.Context managerContext) {
+            this.managerContext = managerContext;
+            this.value += managerContext.logging;
             return this;
         }
 

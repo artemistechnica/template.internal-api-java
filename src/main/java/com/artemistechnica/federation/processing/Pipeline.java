@@ -12,21 +12,14 @@ public interface Pipeline {
 
     default <A> Function<A, EitherE<PipelineResult.Materializer<A>>> pipeline(Function<A, EitherE<A>>... stages) {
         return (A ctx) -> {
-            // Wrap the stages as a lazy execution
-            EitherE<Supplier<EitherE<A>>> resultE = Arrays.stream(stages)
-                    // Wrap invocation in a [[step]] for later execution
+            EitherE<A> resultE = Arrays.stream(stages)
                     .map(this::step)
-                    // Reduce the pipeline steps into a single result
                     .reduce(
-                            // Initial accumulator
-                            EitherE.success(() -> EitherE.success(ctx)),
-                            // Accumulate
-                            (acc, step) -> acc.map(r -> () -> r.get().flatMapE(step)),
-                            // Reduce - return the last result
+                            EitherE.success(ctx),
+                            (acc, step) -> acc.flatMapE(r -> step.apply(r)),
                             (acc0, acc1) -> acc1
                     );
-            // Execute
-            return resultE.flatMapE(fn -> fn.get().map(PipelineResult::construct));
+            return resultE.map(PipelineResult::construct);
         };
     }
 

@@ -13,7 +13,7 @@ public interface Metrics extends Retry {
 
     default EitherE<Context> applyMetrics(Context ctx) {
         return retry(3, () -> {
-            System.out.println("APPLYING METRICS!");
+            System.out.println(String.format("%s APPLYING METRICS!", ctx.value));
             return ctx;
         });
     }

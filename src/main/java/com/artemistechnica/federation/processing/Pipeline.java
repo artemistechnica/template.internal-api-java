@@ -6,7 +6,6 @@ import com.artemistechnica.federation.services.Metrics;
 
 import java.util.Arrays;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public interface Pipeline {
 
@@ -16,7 +15,7 @@ public interface Pipeline {
                     .map(this::step)
                     .reduce(
                             EitherE.success(ctx),
-                            (acc, step) -> acc.flatMapE(r -> step.apply(r)),
+                            (acc, step) -> acc.flatMapE(step),
                             (acc0, acc1) -> acc1
                     );
             return resultE.map(PipelineResult::construct);
@@ -24,8 +23,9 @@ public interface Pipeline {
     }
 
     private <A> Function<A, EitherE<A>> step(Function<A, EitherE<A>> fn) {
-        Function<Metrics.Context, EitherE<Metrics.Context>> m = new Metrics() {}.metrics(new Metrics.Context("PIPELINE STEP"));
-        return (A ctx) -> m.apply(new Metrics.Context()).flatMapE(c -> fn.apply(ctx));
+        // TODO metrics
+//        Function<Metrics.Context, EitherE<Metrics.Context>> m = new Metrics() {}.metrics(new Metrics.Context("PIPELINE STEP"));
+        return (A ctx) -> fn.apply(ctx);//m.apply(new Metrics.Context()).flatMapE(c -> fn.apply(ctx));
     }
 
     interface PipelineResult {

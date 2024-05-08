@@ -1,9 +1,12 @@
 package com.artemistechnica.federation.processing;
 
+import com.artemistechnica.commons.Either;
+import com.artemistechnica.commons.errors.SimpleError;
 import com.artemistechnica.commons.utils.EitherE;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -36,5 +39,21 @@ public class PipelineTests implements Pipeline {
         assert(result.isRight());
         assert(result.right.isPresent());
         assert(result.right.get() == count);
+    }
+
+    @Test
+    public void testSimpplePipelineAsFunctionArgument() {
+        Function<String, EitherE<PipelineResult.Materializer<String>>> p0 = pipeline(
+                (String str) -> EitherE.success(String.format("Hello, %s!", str))
+        );
+
+        BiFunction<String, Function<String, EitherE<PipelineResult.Materializer<String>>>, Either<SimpleError, String>> fn = (String name, Function<String, EitherE<PipelineResult.Materializer<String>>> pipe) -> {
+            return pipe.apply(name).flatMap(mat -> mat.materialize(str -> str));
+        };
+
+        Either<SimpleError, String> result = fn.apply("Nick", p0);
+
+        assert(result.isRight());
+        assert(result.right.get().equals("Hello, Nick!"));
     }
 }

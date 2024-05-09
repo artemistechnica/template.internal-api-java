@@ -20,7 +20,7 @@ configurations {
 repositories {
 	mavenCentral()
 	maven {
-		url = uri("https://maven.pkg.github.com/artemistechnica/*")
+		url = uri("https://maven.pkg.github.com/artemistechnica/commons")
 		credentials {
 			username = project.findProperty("github.actor") as String? ?: System.getenv("GITHUB_ACTOR")
 			password = project.findProperty("github.secret") as String? ?: System.getenv("GITHUB_TOKEN")

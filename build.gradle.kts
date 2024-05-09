@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
-	implementation("com.artemistechnica.commons:commons-java:0.0.1-SNAPSHOT")
+	implementation("com.artemistechnica.commons:commons-java:0.0.2-SNAPSHOT")
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

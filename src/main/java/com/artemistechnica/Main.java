@@ -41,7 +41,7 @@ public class Main implements Try {
                 System.out.printf("EXPECTED ERROR: %s", e.getMessage());
             }
 
-            EitherE<Integer> e6 = tryFn(() -> {
+            EitherE<Integer> e6 = tryFunc(() -> {
                 throw new RuntimeException("Something bad happened");
             });
 
@@ -55,14 +55,14 @@ public class Main implements Try {
 
             List<Function<Context, EitherE<Context>>> stps = List.of(
                     this::preCheck,
-                    (ctx) -> tryFn(() -> Context.mk(doWork(ctx))),
+                    (ctx) -> tryFunc(() -> Context.mk(doWork(ctx))),
                     this::postCheck
             );
 
 
             Function<Context, EitherE<PipelineResult.Materializer<Context>>> pipelineFn0 = pipeline(
                     this::preCheck,
-                    (ctx) -> tryFn(() -> Context.mk(doWork(ctx))),
+                    (ctx) -> tryFunc(() -> Context.mk(doWork(ctx))),
                     this::postCheck
             );
 
@@ -72,7 +72,7 @@ public class Main implements Try {
 
             Function<Context, EitherE<PipelineResult.Materializer<Context>>> pipelineFn2 = pipeline(
                     this::preCheck,
-                    (ctx) -> tryFn(() -> Context.mk(doWorkBad(ctx))),
+                    (ctx) -> tryFunc(() -> Context.mk(doWorkBad(ctx))),
                     this::postCheck
             );
 

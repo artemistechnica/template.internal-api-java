@@ -22,8 +22,8 @@ repositories {
 	maven {
 		url = uri("https://maven.pkg.github.com/artemistechnica/*")
 		credentials {
-			username = project.findProperty("github.actor") as String? ?: System.getenv("USERNAME")
-			password = project.findProperty("github.secret") as String? ?: System.getenv("TOKEN")
+			username = project.findProperty("github.actor") as String? ?: System.getenv("GITHUB_ACTOR")
+			password = project.findProperty("github.secret") as String? ?: System.getenv("GITHUB_TOKEN")
 		}
 	}
 }

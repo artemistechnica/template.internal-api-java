@@ -1,8 +1,8 @@
 package com.artemistechnica.federation.services;
 
-import com.artemistechnica.commons.utils.EitherE;
-import com.artemistechnica.commons.utils.Retry;
-import com.artemistechnica.federation.processing.Pipeline;
+import com.artemistechnica.commons.datatypes.EitherE;
+import com.artemistechnica.commons.errors.Retry;
+import com.artemistechnica.commons.processing.Pipeline;
 
 import java.util.function.Function;
 

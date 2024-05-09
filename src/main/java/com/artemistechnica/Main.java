@@ -1,9 +1,9 @@
 package com.artemistechnica;
 
-import com.artemistechnica.commons.Either;
-import com.artemistechnica.commons.utils.EitherE;
-import com.artemistechnica.commons.utils.Try;
-import com.artemistechnica.federation.processing.Pipeline;
+import com.artemistechnica.commons.datatypes.Either;
+import com.artemistechnica.commons.datatypes.EitherE;
+import com.artemistechnica.commons.errors.Try;
+import com.artemistechnica.commons.processing.Pipeline;
 import com.artemistechnica.federation.services.Federation;
 
 import java.util.List;

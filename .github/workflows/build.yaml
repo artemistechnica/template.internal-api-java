@@ -26,5 +26,5 @@ jobs:
       - name: Build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ GITHUB_ACTOR }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: ./gradlew clean build

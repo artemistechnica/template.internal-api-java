@@ -20,7 +20,7 @@ configurations {
 repositories {
 	mavenCentral()
 	maven {
-		url = uri("https://maven.pkg.github.com/artemistechnica/commons-java")
+		url = uri("https://maven.pkg.github.com/artemistechnica/*")
 		credentials {
 			username = project.findProperty("github.actor") as String? ?: System.getenv("GITHUB_ACTOR")
 			password = project.findProperty("github.secret") as String? ?: System.getenv("GITHUB_TOKEN")
@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.boot:spring-boot-starter-web:3.2.5")
 	implementation("com.artemistechnica.commons:commons-java:0.0.2-SNAPSHOT")
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")

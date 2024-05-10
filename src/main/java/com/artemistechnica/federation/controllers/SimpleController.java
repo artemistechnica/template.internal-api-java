@@ -17,8 +17,7 @@ public class SimpleController {
     }
 
     @GetMapping("/envelope")
-    @ResponseBody
-    public Envelope<SampleModel> getSampleEnvelope() {
+    public @ResponseBody Envelope<SampleModel> getSampleEnvelope() {
         return Envelope.mkSuccess(
                 SampleModel.mk(
                         UUID.randomUUID().toString(),
@@ -36,8 +35,7 @@ public class SimpleController {
     }
 
     @GetMapping("/envelope/error")
-    @ResponseBody
-    public Envelope<SampleModel> getSampleErrorEnvelope() {
+    public @ResponseBody Envelope<SampleModel> getSampleErrorEnvelope() {
         return Envelope.mkFailure(String.format("Error: %s", UUID.randomUUID()));
     }
 }

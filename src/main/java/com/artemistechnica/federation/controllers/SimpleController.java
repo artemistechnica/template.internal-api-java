@@ -1,7 +1,10 @@
 package com.artemistechnica.federation.controllers;
 
+import com.artemistechnica.commons.datatypes.EitherE;
 import com.artemistechnica.commons.datatypes.Envelope;
 import com.artemistechnica.federation.models.SampleModel;
+import com.artemistechnica.federation.services.Federation;
+import com.artemistechnica.federation.utils.HelperFunctions;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-public class SimpleController {
+public class SimpleController implements Federation {
 
     @GetMapping("/sample")
     public String getSample() {
@@ -32,6 +35,14 @@ public class SimpleController {
                         UUID.randomUUID().toString()
                 )
         );
+    }
+
+    @GetMapping("/pipeline")
+    public @ResponseBody Envelope<SampleModel> getSamplePipeline() {
+        return federate(HelperFunctions::identity)
+                .apply(Context.mk(UUID.randomUUID().toString()))
+                .flatMapE(mat -> mat.materialize(c -> SampleModel.mk("SUCCESS", c.value)))
+                .map(Envelope::mkSuccess).right.orElse(getSampleErrorEnvelope());
     }
 
     @GetMapping("/envelope/error")

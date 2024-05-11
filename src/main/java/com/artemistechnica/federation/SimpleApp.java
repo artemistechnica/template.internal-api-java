@@ -1,10 +1,16 @@
 package com.artemistechnica.federation;
 
+import com.artemistechnica.commons.datatypes.EitherE;
 import com.artemistechnica.federation.services.Federation;
+import com.artemistechnica.federation.utils.HelperFunctions;
+
+import java.util.function.Function;
 
 public class SimpleApp implements Federation {
 
     public void doWork() {
+
+        Function<Context, EitherE<PipelineResult.Materializer<Context>>> r = federate(HelperFunctions::identity);
 
         /**
          * pipeline( ctx -> {

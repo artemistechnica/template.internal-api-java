@@ -1,8 +1,8 @@
 package com.artemistechnica.federation;
 
 import com.artemistechnica.commons.datatypes.EitherE;
+import com.artemistechnica.commons.utils.HelperFunctions;
 import com.artemistechnica.federation.services.Federation;
-import com.artemistechnica.federation.utils.HelperFunctions;
 
 import java.util.function.Function;
 

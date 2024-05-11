@@ -1,10 +1,9 @@
 package com.artemistechnica.federation.controllers;
 
-import com.artemistechnica.commons.datatypes.EitherE;
 import com.artemistechnica.commons.datatypes.Envelope;
+import com.artemistechnica.commons.utils.HelperFunctions;
 import com.artemistechnica.federation.models.SampleModel;
 import com.artemistechnica.federation.services.Federation;
-import com.artemistechnica.federation.utils.HelperFunctions;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,6 +42,14 @@ public class SimpleController implements Federation {
                 .apply(Context.mk(UUID.randomUUID().toString()))
                 .flatMapE(mat -> mat.materialize(c -> SampleModel.mk("SUCCESS", c.value)))
                 .map(Envelope::mkSuccess).right.orElse(getSampleErrorEnvelope());
+    }
+
+    @GetMapping("/pipeline/error")
+    public @ResponseBody Envelope<SampleModel> getSampleErrorPipeline() {
+        return federate(ctx ->  { throw new RuntimeException("Exception raised!"); })
+                .apply(Context.mk(UUID.randomUUID().toString()))
+                .flatMapE(mat -> mat.materialize(c -> SampleModel.mk("SUCCESS", c.value)))
+                .map(Envelope::mkSuccess).right.orElseGet(this::getSampleErrorEnvelope);
     }
 
     @GetMapping("/envelope/error")

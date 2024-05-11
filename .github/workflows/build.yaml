@@ -26,4 +26,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
-        run: ./gradlew clean build
+        run: ./gradlew clean build --refresh-dependencies

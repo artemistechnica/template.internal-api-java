@@ -1,5 +1,6 @@
 package com.artemistechnica.federation.controllers;
 
+import com.artemistechnica.commons.datatypes.EitherE;
 import com.artemistechnica.commons.datatypes.Envelope;
 import com.artemistechnica.commons.utils.HelperFunctions;
 import com.artemistechnica.federation.models.SampleModel;
@@ -48,8 +49,8 @@ public class SimpleController implements Federation {
     public @ResponseBody Envelope<SampleModel> getSampleErrorPipeline() {
         return federate(ctx ->  { throw new RuntimeException("Exception raised!"); })
                 .apply(Context.mk(UUID.randomUUID().toString()))
-                .flatMapE(mat -> mat.materialize(c -> SampleModel.mk("SUCCESS", c.value)))
-                .map(Envelope::mkSuccess).right.orElseGet(this::getSampleErrorEnvelope);
+                .biFlatMapE(err -> EitherE.success(Envelope.<SampleModel>mkFailure(err.error)), mat -> mat.materialize(c -> Envelope.mkSuccess(SampleModel.mk("SUCCESS", c.value))))
+                .right.orElseGet(this::getSampleErrorEnvelope);
     }
 
     @GetMapping("/envelope/error")

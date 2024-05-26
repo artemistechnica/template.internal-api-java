@@ -6,6 +6,7 @@ import com.artemistechnica.commons.errors.SimpleError;
 import com.artemistechnica.commons.utils.HelperFunctions;
 import com.artemistechnica.federation.models.SampleModel;
 import com.artemistechnica.federation.services.Federation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,10 +51,8 @@ public class SimpleController implements Federation {
     public @ResponseBody Envelope<SampleModel> getSampleErrorPipeline() {
         return federate(ctx ->  { throw new RuntimeException("Exception raised!"); })
                 .apply(Context.mk(UUID.randomUUID().toString()))
-                .biFlatMapE(
-                        err -> EitherE.failure(err),
-                        mat -> mat.materialize(c -> SampleModel.mk("SUCCESS", c.value))
-                ).materialize(
+                .flatMapE(mat -> mat.materialize(c -> SampleModel.mk("SUCCESS", c.value)))
+                .materialize(
                         error -> Envelope.mkFailure(String.format("Materialized error: %s", error.error)),
                         model -> Envelope.mkSuccess(model)
                 );

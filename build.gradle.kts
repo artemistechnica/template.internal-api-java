@@ -29,12 +29,13 @@ repositories {
 }
 
 dependencies {
+	compileOnly("org.projectlombok:lombok")
+	annotationProcessor("org.projectlombok:lombok")
 	implementation("io.github.git-commit-id:git-commit-id-maven-plugin:8.0.2")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-web:3.2.5")
 	implementation("com.artemistechnica.commons:commons-java:0.0.4-SNAPSHOT")
-	compileOnly("org.projectlombok:lombok")
-	annotationProcessor("org.projectlombok:lombok")
+	implementation("io.micrometer:micrometer-registry-prometheus:1.13.0")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 

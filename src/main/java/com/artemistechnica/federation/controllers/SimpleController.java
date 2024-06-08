@@ -2,11 +2,10 @@ package com.artemistechnica.federation.controllers;
 
 import com.artemistechnica.commons.datatypes.EitherE;
 import com.artemistechnica.commons.datatypes.Envelope;
-import com.artemistechnica.commons.errors.SimpleError;
+import com.artemistechnica.commons.datatypes.Pair;
 import com.artemistechnica.commons.utils.HelperFunctions;
 import com.artemistechnica.federation.models.SampleModel;
 import com.artemistechnica.federation.services.Federation;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,6 +36,36 @@ public class SimpleController implements Federation {
                         UUID.randomUUID().toString()
                 )
         );
+    }
+
+    @GetMapping("/envelope/async")
+    public @ResponseBody Envelope<SampleModel> getSampleEnvelopeAsync() {
+        return EitherE.success(Pair.pair(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
+                .mapAsyncE(pair -> SampleModel.mk(pair.left, pair.right))
+                // Materialize the result from the [[CompletableFutureE]]
+                .materialize()
+                // Materialize an [[Envelope]] from an [[EitherE]]
+                .materialize(
+                        // Handle the error
+                        err     -> Envelope.mkFailure(err.error),
+                        // Handle the success
+                        model   -> Envelope.mkSuccess(model)
+                );
+    }
+
+    @GetMapping("/envelope/async/error")
+    public @ResponseBody Envelope<SampleModel> getSampleErrorEnvelopeAsync() {
+        return EitherE.success(Pair.pair(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
+                .mapAsyncE(pair -> SampleModel.mk(pair.left, pair.right))
+                // Need to explicitly parameterize with <SampleModel> since we're purposefully throwing an exception
+                .<SampleModel>mapAsyncE(model -> { throw new RuntimeException(String.format("Error raised processing model with values: %s and %s", model.valueA, model.valueB)); })
+                .materialize()
+                .materialize(
+                        // Handle the error
+                        err     -> Envelope.mkFailure(err.error),
+                        // Handle the success
+                        model   -> Envelope.mkSuccess(model)
+                );
     }
 
     @GetMapping("/pipeline")

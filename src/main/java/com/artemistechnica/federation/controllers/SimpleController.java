@@ -78,7 +78,7 @@ public class SimpleController implements Federation {
                         try {
                             Thread.sleep(sleepLength);
                             complete.set(true);
-                            return String.format("Work ID: %d, Thread ID: %s Thread sleep: %d", Thread.currentThread().threadId(), id, sleepLength);
+                            return String.format("Work ID: %d, Thread ID: %s Thread sleep: %d", id, Thread.currentThread().threadId(), sleepLength);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }

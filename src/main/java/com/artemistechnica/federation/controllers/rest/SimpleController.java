@@ -1,4 +1,4 @@
-package com.artemistechnica.federation.controllers;
+package com.artemistechnica.federation.controllers.rest;
 
 import com.artemistechnica.commons.datatypes.CompletableFutureE;
 import com.artemistechnica.commons.datatypes.EitherE;

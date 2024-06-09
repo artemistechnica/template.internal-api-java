@@ -36,7 +36,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web:3.2.5")
 	implementation("com.artemistechnica.commons:commons-java:0.0.6-SNAPSHOT")
 	implementation("io.micrometer:micrometer-registry-prometheus:1.13.0")
+	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+	implementation("org.webjars:bootstrap:5.3.3")
+	implementation("org.webjars.npm:htmx.org:1.9.12")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
 
 tasks.withType<Test> {

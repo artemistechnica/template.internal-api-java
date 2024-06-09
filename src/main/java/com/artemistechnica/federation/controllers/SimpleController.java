@@ -68,9 +68,9 @@ public class SimpleController implements Federation {
         List<Integer>                                   workerCount         = IntStream.rangeClosed(1, 10).boxed().toList();
         AtomicReference<List<SampleModel>>              results             = new AtomicReference<>(new ArrayList<>());
         AtomicReference<Boolean>                        masterComplete      = new AtomicReference<>(false);
-        List<CompletableFutureE<EitherE<SampleModel>>> threads = workerCount
+        List<CompletableFutureE<EitherE<SampleModel>>>  threads             = workerCount
                 .stream()
-                // Need EitherE#flatmapAsync
+                // Need EitherE#flatMapEAsync
                 .map(i -> EitherE.success(i).mapAsyncE(id -> EitherE.success(id).mapAsyncE(workId -> {
                     long sleepLength = ThreadLocalRandom.current().nextLong(2500, 8000 + 1);
                     try {
@@ -84,7 +84,7 @@ public class SimpleController implements Federation {
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                }).materialize(5000, TimeUnit.MILLISECONDS))).toList();
+                }).materialize(5000, TimeUnit.MILLISECONDS))).toList(); // It is expected some will fail with time-boxed materialize call.
 
         // Blocking
         while (!masterComplete.get()) {
@@ -92,7 +92,16 @@ public class SimpleController implements Federation {
             masterComplete.updateAndGet(c -> threads.stream().filter(CompletableFutureE::isDone).toList().size() == threads.size());
         }
 
-        List<SampleModel> models = threads.stream().map(t -> t.materialize().flatMapE(workerResult -> workerResult).resolve(err -> SampleModel.mk("error", err.exception.get().getClass().getName()), HelperFunctions::identity)).toList();
+        List<SampleModel> models = threads
+                .stream()
+                .map(t -> t.materialize() // A 'materializeFlatMap' of sorts might help here
+                        .flatMapE(HelperFunctions::identity)
+                        .resolve(
+                                err -> SampleModel.mk("error", err.exception.get().getClass().getName()),
+                                HelperFunctions::identity
+                        )
+                ).toList();
+
         return Envelope.mkSuccess(models.toArray(new SampleModel[0]));
     }
 

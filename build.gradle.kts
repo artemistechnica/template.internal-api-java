@@ -48,6 +48,10 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
+//tasks.jar {
+//	archiveFileName.set("${project.name}.jar")
+//}
+
 springBoot {
 	buildInfo()
 }

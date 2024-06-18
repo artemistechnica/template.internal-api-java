@@ -11,17 +11,16 @@
         </http>
         <format>
             <label>
-                <pattern>app=${name},host=${HOSTNAME},level=%level</pattern>
+                <pattern>app=template.internal-api-java,host=${HOSTNAME},level=%level</pattern>
                 <readMarkers>true</readMarkers>
             </label>
             <message>
                 <pattern>
                     {
-                    "level":"%level",
-                    "class":"%logger{36}",
-                    "thread":"%thread",
-                    "message": "%message",
-                    "requestId": "%X{X-Request-ID}"
+                        "timestamp": "%d{HH:mm:ss.SSS}",
+                        "level":"%level",
+                        "message": "%message",
+                        "requestId": "%X{X-Request-ID}"
                     }
                 </pattern>
             </message>

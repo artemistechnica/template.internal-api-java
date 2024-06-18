@@ -39,6 +39,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.webjars:bootstrap:5.3.3")
 	implementation("org.webjars.npm:htmx.org:1.9.12")
+	implementation("com.github.loki4j:loki-logback-appender:1.5.1")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 }

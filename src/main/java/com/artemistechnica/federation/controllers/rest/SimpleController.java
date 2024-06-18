@@ -7,6 +7,7 @@ import com.artemistechnica.commons.datatypes.Pair;
 import com.artemistechnica.commons.utils.HelperFunctions;
 import com.artemistechnica.federation.models.SampleModel;
 import com.artemistechnica.federation.services.Federation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
+@Slf4j
 @RestController
 public class SimpleController implements Federation {
 
@@ -47,6 +49,7 @@ public class SimpleController implements Federation {
 
     @GetMapping("/envelope/async")
     public @ResponseBody Envelope<SampleModel> getSampleEnvelopeAsync() {
+        log.debug("Entering: /envelope/async");
         return EitherE.success(Pair.pair(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
                 .mapAsyncE(pair -> SampleModel.mk(pair.left, pair.right))
                 // Materialize the result from the [[CompletableFutureE]]
@@ -54,7 +57,7 @@ public class SimpleController implements Federation {
                 // Materialize an [[Envelope]] from an [[EitherE]]
                 .resolve(
                         // Handle the error
-                        err     -> Envelope.mkFailure(err.error),
+                        err     -> { log.error(err.error); return Envelope.mkFailure(err.error); },
                         // Handle the success
                         model   -> Envelope.mkSuccess(model)
                 );
@@ -97,7 +100,7 @@ public class SimpleController implements Federation {
                 .map(t -> t.materialize() // A 'materializeFlatMap' of sorts might help here
                         .flatMapE(HelperFunctions::identity)
                         .resolve(
-                                err -> SampleModel.mk("error", err.exception.get().getClass().getName()),
+                                err -> { log.error(err.exception.map(e -> e.getClass().getName()).orElseGet(() -> "UNKNOWN ERROR MESSAGE!")); return SampleModel.mk("error", err.exception.get().getClass().getName()); },
                                 HelperFunctions::identity
                         )
                 ).toList();

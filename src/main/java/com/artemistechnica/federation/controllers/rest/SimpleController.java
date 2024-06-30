@@ -5,7 +5,7 @@ import com.artemistechnica.commons.datatypes.EitherE;
 import com.artemistechnica.commons.datatypes.Envelope;
 import com.artemistechnica.commons.datatypes.Pair;
 import com.artemistechnica.commons.utils.HelperFunctions;
-import com.artemistechnica.example.model.SimpleData;
+import com.artemistechnica.federation.example.models.SimpleData;
 import com.artemistechnica.federation.models.SampleModel;
 import com.artemistechnica.federation.services.Federation;
 import lombok.extern.slf4j.Slf4j;

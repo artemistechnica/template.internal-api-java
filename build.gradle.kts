@@ -52,14 +52,21 @@ dependencies {
 	implementation("javax.validation:validation-api:2.0.0.Final")
 }
 
+openApiValidate {
+	inputSpec.set("$rootDir/src/main/resources/static/api/swagger.yaml")
+	recommend.set(true)
+}
+
 // Generate sources from swagger specs
 openApiGenerate {
 	generatorName.set("spring")
 	inputSpec.set("$rootDir/src/main/resources/static/api/swagger.yaml")
 	outputDir.set("$buildDir/generated/v1/")
-	modelPackage.set("com.artemistechnica.example.model")
-	invokerPackage.set("com.artemistechnica.example.invoker")
-	apiPackage.set("com.artemistechnica.example.api")
+	modelPackage.set("com.artemistechnica.federation.example.models")
+	invokerPackage.set("com.artemistechnica.federation.example.invoker")
+	apiPackage.set("com.artemistechnica.federation.example.api")
+	// Only generating the [[SimpleData]] model
+	globalProperties.put("models", "SimpleData")
 }
 
 // Add generated sources to classpath
@@ -69,9 +76,28 @@ configure<SourceSetContainer> {
 	}
 }
 
+// Ensure spec is validated before generation
+tasks.openApiGenerate {
+	dependsOn(tasks.openApiValidate)
+}
+
 // Ensure sources are generated before compilation
 tasks.compileJava {
 	dependsOn(tasks.openApiGenerate)
+}
+
+// Sample task for generating an example javascript client
+tasks.create<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("buildJavascriptClient") {
+	generatorName = "javascript"
+	inputSpec.set("$rootDir/src/main/resources/static/api/swagger.yaml")
+	outputDir = "$buildDir/clients/javascript"
+	apiPackage = "api"
+	invokerPackage = "com.artemistechnica.federation.example.client"
+	modelPackage = "model"
+	groupId = "com.artemistechnica.federation.client.javascript.example"
+	configOptions.put("usePromises", "true")
+	configOptions.put("projectName", "template.internal-api-client-javascript")
+	id = "client"
 }
 
 tasks.withType<Test> {

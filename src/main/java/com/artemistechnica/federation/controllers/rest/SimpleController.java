@@ -5,6 +5,7 @@ import com.artemistechnica.commons.datatypes.EitherE;
 import com.artemistechnica.commons.datatypes.Envelope;
 import com.artemistechnica.commons.datatypes.Pair;
 import com.artemistechnica.commons.utils.HelperFunctions;
+import com.artemistechnica.example.model.SimpleData;
 import com.artemistechnica.federation.models.SampleModel;
 import com.artemistechnica.federation.services.Federation;
 import lombok.extern.slf4j.Slf4j;
@@ -30,17 +31,17 @@ public class SimpleController implements Federation {
     }
 
     @GetMapping("/envelope")
-    public @ResponseBody Envelope<SampleModel> getSampleEnvelope() {
+    public @ResponseBody Envelope<SimpleData> getSampleEnvelope() {
         return Envelope.mkSuccess(
-                SampleModel.mk(
+                new SimpleData(
                         UUID.randomUUID().toString(),
                         UUID.randomUUID().toString()
                 ),
-                SampleModel.mk(
+                new SimpleData(
                         UUID.randomUUID().toString(),
                         UUID.randomUUID().toString()
                 ),
-                SampleModel.mk(
+                new SimpleData(
                         UUID.randomUUID().toString(),
                         UUID.randomUUID().toString()
                 )

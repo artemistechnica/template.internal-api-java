@@ -18,8 +18,8 @@ info:
 externalDocs:
   description: Find out more about Artemis Technica
   url: https://www.artemistechnica.com
-servers:
-  - url: https://api.artemistechnica.com/v1
+#servers:
+#  - url: https://api.artemistechnica.com/v1
 tags:
   - name: Envelope
     description: Everything about envelopes
@@ -57,6 +57,19 @@ paths:
                 $ref: '#/components/schemas/EnvelopeError'
 components:
   schemas:
+    SimpleData:
+      type: object
+      title: A Schema
+      required:
+        - valueA
+        - valueB
+      properties:
+        valueA:
+          type: string
+          title: The valueA Schema
+        valueB:
+          type: string
+          title: The valueB Schema
     Envelope:
       type: object
       title: Envelope
@@ -66,8 +79,6 @@ components:
       properties:
         code:
           type: object
-          default: {}
-          title: The code Schema
           required:
             - uri
             - id
@@ -90,18 +101,7 @@ components:
           default: []
           title: The data Schema
           items:
-            type: object
-            title: A Schema
-            required:
-              - valueA
-              - valueB
-            properties:
-              valueA:
-                type: string
-                title: The valueA Schema
-              valueB:
-                type: string
-                title: The valueB Schema
+            $ref: '#/components/schemas/SimpleData'
       example:
         - code:
             uri: 'sampleapp://localhost/success#200'
@@ -123,8 +123,6 @@ components:
       properties:
         code:
           type: object
-          default: {}
-          title: The code Schema
           required:
             - uri
             - id
@@ -145,11 +143,8 @@ components:
         errors:
           type: array
           default: []
-          title: The errors Schema
           items:
             type: object
-            default: {}
-            title: A Schema
             required:
               - error
             properties:

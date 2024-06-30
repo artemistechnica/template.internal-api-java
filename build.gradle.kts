@@ -2,7 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.3.0"
 	id("io.spring.dependency-management") version "1.1.4"
-	id("org.hidetake.swagger.generator") version "2.19.2"
+	id("org.openapi.generator") version "7.6.0"
 }
 
 group = "com.artemistechnica.federation"
@@ -32,6 +32,11 @@ repositories {
 dependencies {
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
+	// For open api codegen
+	compileOnly("javax.servlet:javax.servlet-api:4.0.1")
+	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
+	implementation("javax.annotation:javax.annotation-api:1.3.2")
+	// End for open api codegen
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 	implementation("io.github.git-commit-id:git-commit-id-maven-plugin:8.0.2")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -44,32 +49,34 @@ dependencies {
 	implementation("com.github.loki4j:loki-logback-appender:1.5.1")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	swaggerCodegen("io.swagger:swagger-codegen-cli:2.4.34")
-	swaggerCodegen("io.swagger.codegen.v3:swagger-codegen-cli:3.0.47")
-	swaggerCodegen("org.openapitools:openapi-generator-cli:3.3.4")
-	swaggerUI("org.webjars:swagger-ui:4.1.3-1")
+	implementation("javax.validation:validation-api:2.0.0.Final")
 }
 
-tasks.processResources {
-	from("api").into("api")
+// Generate sources from swagger specs
+openApiGenerate {
+	generatorName.set("spring")
+	inputSpec.set("$rootDir/src/main/resources/static/api/swagger.yaml")
+	outputDir.set("$buildDir/generated/v1/")
+	modelPackage.set("com.artemistechnica.example.model")
+	invokerPackage.set("com.artemistechnica.example.invoker")
+	apiPackage.set("com.artemistechnica.example.api")
+}
+
+// Add generated sources to classpath
+configure<SourceSetContainer> {
+	named("main") {
+		java.srcDir("$buildDir/generated/v1/src/main/java")
+	}
+}
+
+// Ensure sources are generated before compilation
+tasks.compileJava {
+	dependsOn(tasks.openApiGenerate)
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
-
-swaggerSources {
-//	template {
-//		inputFile = file("template.yaml")
-//		code {
-//			language = "spring"
-//		}
-//	}
-}
-
-//tasks.jar {
-//	archiveFileName.set("${project.name}.jar")
-//}
 
 springBoot {
 	buildInfo()

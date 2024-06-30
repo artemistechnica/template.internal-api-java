@@ -1,0 +1,179 @@
+openapi: 3.0.3
+info:
+  title: Artemis Technica Federation - OpenAPI 3.0
+  description: |-
+    This is a sample federated api based on the OpenAPI 3.0 specification.  You can find out more about
+    Artemis Technica at [https://www.artemistechnica.com](https://www.artemistechnica.com).
+    
+    Some useful links:
+    - [The api template repository](https://github.com/artemistechnica/template.internal-api-java)
+    - [Artemis Technica](https://www.artemistechnica.com)
+  termsOfService: https://www.artemistechnica.com/terms/
+  contact:
+    email: developers@artemistechnica.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Artemis Technica
+  url: https://www.artemistechnica.com
+servers:
+  - url: https://api.artemistechnica.com/v1
+tags:
+  - name: Envelope
+    description: Everything about envelopes
+    externalDocs:
+      description: Find out more
+      url: https://www.artemistechnica.com
+paths:
+  /envelope:
+    get:
+      tags:
+        - Envelope
+      summary: Example success envelope
+      description: Return a successful envelope
+      operationId: getSuccessEnvelope
+      responses:
+        '200':
+          description: Success envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /envelope/error:
+    get:
+      tags:
+        - Envelope
+      summary: Example error envelope
+      description: Return an error envelope
+      operationId: getErrorEnvelope
+      responses:
+        '400':
+          description: Error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvelopeError'
+components:
+  schemas:
+    Envelope:
+      type: object
+      title: Envelope
+      required:
+        - code
+        - data
+      properties:
+        code:
+          type: object
+          default: {}
+          title: The code Schema
+          required:
+            - uri
+            - id
+            - message
+          properties:
+            uri:
+              type: string
+              default: ''
+              title: The uri Schema
+            id:
+              type: integer
+              default: 0
+              title: The id Schema
+            message:
+              type: string
+              default: ''
+              title: The message Schema
+        data:
+          type: array
+          default: []
+          title: The data Schema
+          items:
+            type: object
+            title: A Schema
+            required:
+              - valueA
+              - valueB
+            properties:
+              valueA:
+                type: string
+                title: The valueA Schema
+              valueB:
+                type: string
+                title: The valueB Schema
+      example:
+        - code:
+            uri: 'sampleapp://localhost/success#200'
+            id: 200
+            message: SUCCESS
+          data:
+            - valueA: eec8797f-a1cc-474d-afb5-6c88f2c5ba16
+              valueB: bf0f4098-9fcf-4424-89cd-f5d47bd513c2
+            - valueA: 0e013b93-b183-414d-b2b0-b6a710dac340
+              valueB: 27371ea7-83ec-4b7f-b6ae-ad3da9fd8cd8
+            - valueA: d3384794-18df-49d8-a3f2-e60e03d6dfd8
+              valueB: 41a1559f-dcc6-47ce-8393-777f3db8a318
+    EnvelopeError:
+      type: object
+      title: EnvelopeError
+      required:
+        - code
+        - errors
+      properties:
+        code:
+          type: object
+          default: {}
+          title: The code Schema
+          required:
+            - uri
+            - id
+            - message
+          properties:
+            uri:
+              type: string
+              default: ''
+              title: The uri Schema
+            id:
+              type: integer
+              default: 0
+              title: The id Schema
+            message:
+              type: string
+              default: ''
+              title: The message Schema
+        errors:
+          type: array
+          default: []
+          title: The errors Schema
+          items:
+            type: object
+            default: {}
+            title: A Schema
+            required:
+              - error
+            properties:
+              error:
+                type: string
+                default: ''
+                title: The error Schema
+      example:
+        - code:
+            uri: 'sampleapp://localhost/error#500'
+            id: 500
+            message: ERROR
+          errors:
+            - error: 'Error: 990dccf3-740d-4731-bf73-e5a472fa5b00'
+  securitySchemes:
+    federation_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://auth.artemistechnica.com/oauth/authorize
+          scopes:
+            write:data: modify data in your account
+            read:data: read your data
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header

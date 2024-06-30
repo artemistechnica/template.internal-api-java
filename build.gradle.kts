@@ -100,6 +100,21 @@ tasks.create<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("build
 	id = "client"
 }
 
+// Sample task for generating an example java client
+tasks.create<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("buildJavaClient") {
+	generatorName = "java"
+	inputSpec.set("$rootDir/src/main/resources/static/api/swagger.yaml")
+	outputDir = "$buildDir/clients/java"
+	apiPackage = "com.artemistechnica.federation.example.client.api"
+	invokerPackage = "com.artemistechnica.federation.example.client.invoker"
+	modelPackage = "com.artemistechnica.federation.example.client.model"
+	groupId = "com.artemistechnica.federation.client.java.example"
+	configOptions.put("dateLibrary", "java8")
+	configOptions.put("projectName", "template.internal-api-client-java")
+	configOptions.put("generateClientAsBean", "true")
+	id = "client"
+}
+
 tasks.withType<Test> {
 	useJUnitPlatform()
 }

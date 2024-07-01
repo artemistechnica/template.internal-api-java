@@ -27,7 +27,7 @@ tags:
       description: Find out more
       url: https://www.artemistechnica.com
 paths:
-  /envelope:
+  /envelope/success:
     get:
       tags:
         - Envelope
@@ -40,8 +40,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Envelope'
-  /envelope/error:
+                $ref: '#/components/schemas/SimpleDataResponse'
+  /envelope/failure:
     get:
       tags:
         - Envelope
@@ -49,7 +49,114 @@ paths:
       description: Return an error envelope
       operationId: getErrorEnvelope
       responses:
-        '400':
+        '200':
+          description: Error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvelopeError'
+        '500':
+          description: Error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvelopeError'
+  /pipeline:
+    get:
+      tags:
+        - Pipeline
+      summary: Example pipeline
+      description: Return an error envelope
+      operationId: getPipeline
+      responses:
+        '200':
+          description: Error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleDataResponse'
+    post:
+      tags:
+        - Pipeline
+      summary: Example pipeline
+      description: Return an error envelope
+      operationId: setPipeline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimpleData'
+      responses:
+        '200':
+          description: Error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleDataResponse'
+  /pipeline/error:
+    get:
+      tags:
+        - Pipeline
+      summary: Example pipeline
+      description: Return an error envelope
+      operationId: getPipelineError
+      responses:
+        '200':
+          description: Error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvelopeError'
+        '500':
+          description: Error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvelopeError'
+  /async:
+    get:
+      tags:
+        - Async
+      summary: Example pipeline
+      description: Return an error envelope
+      operationId: getAsync
+      responses:
+        '200':
+          description: Error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleDataResponse'
+  /async/long:
+    get:
+      tags:
+        - Async
+      summary: Example pipeline
+      description: Return an error envelope
+      operationId: getAsyncLong
+      responses:
+        '200':
+          description: Error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleDataResponse'
+  /async/error:
+    get:
+      tags:
+        - Async
+      summary: Example pipeline
+      description: Return an error envelope
+      operationId: getAsyncError
+      responses:
+        '200':
+          description: Error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvelopeError'
+        '500':
           description: Error envelope
           content:
             application/json:
@@ -57,19 +164,28 @@ paths:
                 $ref: '#/components/schemas/EnvelopeError'
 components:
   schemas:
+    SimpleDataResponse:
+      title: SimpleDataResponse
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          properties:
+            data:
+              type: array
+              default: []
+              items:
+                $ref: '#/components/schemas/SimpleData'
     SimpleData:
       type: object
-      title: A Schema
+      title: SimpleData
       required:
         - valueA
         - valueB
       properties:
         valueA:
           type: string
-          title: The valueA Schema
         valueB:
           type: string
-          title: The valueB Schema
     Envelope:
       type: object
       title: Envelope
@@ -86,20 +202,14 @@ components:
           properties:
             uri:
               type: string
-              default: ''
-              title: The uri Schema
+              format: uri
             id:
               type: integer
               default: 0
-              title: The id Schema
             message:
               type: string
-              default: ''
-              title: The message Schema
         data:
           type: array
-          default: []
-          title: The data Schema
           items:
             $ref: '#/components/schemas/SimpleData'
       example:

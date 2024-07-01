@@ -60,13 +60,23 @@ openApiValidate {
 // Generate sources from swagger specs
 openApiGenerate {
 	generatorName.set("spring")
+	library.set("spring-boot")
 	inputSpec.set("$rootDir/src/main/resources/static/api/swagger.yaml")
 	outputDir.set("$buildDir/generated/v1/")
-	modelPackage.set("com.artemistechnica.federation.example.models")
-	invokerPackage.set("com.artemistechnica.federation.example.invoker")
-	apiPackage.set("com.artemistechnica.federation.example.api")
-	// Only generating the [[SimpleData]] model
-	globalProperties.put("models", "SimpleData")
+	modelPackage.set("com.artemistechnica.federation.generated.example.models")
+	invokerPackage.set("com.artemistechnica.federation.generated.example.invoker")
+	apiPackage.set("com.artemistechnica.federation.generated.example.api")
+	configOptions.put("dateLibrary", "java8")
+	// This prevents the invoker implementations from being generated
+	configOptions.put("interfaceOnly", "true")
+	configOptions.put("useOptional", "true")
+	// Disables the default interface method (e.g. getRequest)
+	configOptions.put("skipDefaultInterface", "true")
+	// The import/schema mappings map from schema models to concrete implementations
+	importMappings.put("SimpleDataResponse", "com.artemistechnica.federation.models.ServiceResponse")
+	schemaMappings.put("SimpleDataResponse", "com.artemistechnica.federation.models.ServiceResponse")
+	schemaMappings.put("EnvelopeError", "com.artemistechnica.federation.models.ServiceResponse")
+	importMappings.put("EnvelopeError", "com.artemistechnica.federation.models.ServiceResponse")
 }
 
 // Add generated sources to classpath

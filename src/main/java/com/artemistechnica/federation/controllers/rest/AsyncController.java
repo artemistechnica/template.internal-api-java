@@ -7,7 +7,7 @@ import com.artemistechnica.commons.datatypes.Pair;
 import com.artemistechnica.commons.utils.HelperFunctions;
 import com.artemistechnica.commons.utils.Threads;
 import com.artemistechnica.federation.generated.example.api.AsyncApi;
-import com.artemistechnica.federation.models.SampleModel;
+import com.artemistechnica.federation.generated.example.models.SimpleData;
 import com.artemistechnica.federation.models.ServiceResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +30,9 @@ public class AsyncController implements AsyncApi {
         return ResponseEntity.internalServerError().body(
                 ServiceResponse.mk(
                         EitherE.success(Pair.pair(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
-                                .mapAsyncE(pair -> SampleModel.mk(pair.left, pair.right))
+                                .mapAsyncE(pair -> new SimpleData(pair.left, pair.right))
                                 // Need to explicitly parameterize with <SampleModel> since we're purposefully throwing an exception
-                                .<SampleModel>mapAsyncE(model -> { throw new RuntimeException(String.format("Error raised processing model with values: %s and %s", model.valueA, model.valueB)); })
+                                .<SimpleData>mapAsyncE(model -> { throw new RuntimeException(String.format("Error raised processing model with values: %s and %s", model.getValueA(), model.getValueB())); })
                                 .materialize()
                                 .resolve(
                                         // Handle the error
@@ -49,7 +49,7 @@ public class AsyncController implements AsyncApi {
         return ResponseEntity.ok(
                 ServiceResponse.mk(
                         EitherE.success(Pair.pair(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
-                                .mapAsyncE(pair -> SampleModel.mk(pair.left, pair.right))
+                                .mapAsyncE(pair -> new SimpleData(pair.left, pair.right))
                                 // Materialize the result from the [[CompletableFutureE]]
                                 .materialize()
                                 // Materialize an [[Envelope]] from an [[EitherE]]
@@ -68,16 +68,16 @@ public class AsyncController implements AsyncApi {
         // TODO Major refactor. Look at condensing and adding to commons-java (i.e. map reduce)
 
         List<Integer> workerCount         = IntStream.rangeClosed(1, 10).boxed().toList();
-        AtomicReference<List<SampleModel>> results             = new AtomicReference<>(new ArrayList<>());
+        AtomicReference<List<SimpleData>> results             = new AtomicReference<>(new ArrayList<>());
         AtomicReference<Boolean>                        masterComplete      = new AtomicReference<>(false);
-        List<CompletableFutureE<EitherE<SampleModel>>>  threads             = workerCount
+        List<CompletableFutureE<EitherE<SimpleData>>>  threads             = workerCount
                 .stream()
                 // Need EitherE#flatMapEAsync
                 .map(i -> EitherE.success(i).mapAsyncE(id -> EitherE.success(id).mapAsyncE(workId -> {
                     long sleepLength = ThreadLocalRandom.current().nextLong(2500, 8000 + 1);
                     try {
                         Thread.sleep(sleepLength);
-                        SampleModel model = SampleModel.mk("meta", String.format("Work ID: %d, Thread ID: %s Thread sleep: %d", id, Thread.currentThread().threadId(), sleepLength));
+                        SimpleData model = new SimpleData("meta", String.format("Work ID: %d, Thread ID: %s Thread sleep: %d", id, Thread.currentThread().threadId(), sleepLength));
                         results.updateAndGet(l -> {
                             l.add(model);
                             return l;
@@ -94,19 +94,19 @@ public class AsyncController implements AsyncApi {
             masterComplete.updateAndGet(c -> threads.stream().filter(CompletableFutureE::isDone).toList().size() == threads.size());
         }
 
-        List<SampleModel> models = threads
+        List<SimpleData> models = threads
                 .stream()
                 .map(t -> t.materialize() // A 'materializeFlatMap' of sorts might help here
                         .flatMapE(HelperFunctions::identity)
                         .resolve(
-                                err -> { log.error(err.exception.map(e -> e.getClass().getName()).orElseGet(() -> "UNKNOWN ERROR MESSAGE!")); return SampleModel.mk("error", err.exception.get().getClass().getName()); },
+                                err -> { log.error(err.exception.map(e -> e.getClass().getName()).orElseGet(() -> "UNKNOWN ERROR MESSAGE!")); return new SimpleData("error", err.exception.get().getClass().getName()); },
                                 HelperFunctions::identity
                         )
                 ).toList();
 
         return ResponseEntity.ok(
                 ServiceResponse.mk(
-                        Envelope.mkSuccess(models.toArray(new SampleModel[0]))
+                        Envelope.mkSuccess(models.toArray(new SimpleData[0]))
                 )
         );
     }

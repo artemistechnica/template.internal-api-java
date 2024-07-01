@@ -40,7 +40,7 @@ dependencies {
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 	implementation("io.github.git-commit-id:git-commit-id-maven-plugin:8.0.2")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
-	implementation("com.artemistechnica.commons:commons-java:0.0.6-SNAPSHOT")
+	implementation("com.artemistechnica.commons:commons-java:0.0.7-SNAPSHOT")
 	implementation("io.micrometer:micrometer-registry-prometheus:1.13.1")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")

@@ -1,12 +1,11 @@
 package com.artemistechnica.federation.controllers.rest;
 
 import com.artemistechnica.commons.datatypes.Envelope;
+import com.artemistechnica.commons.services.Federation;
 import com.artemistechnica.commons.utils.HelperFunctions;
 import com.artemistechnica.federation.generated.example.api.PipelineApi;
 import com.artemistechnica.federation.generated.example.models.SimpleData;
-import com.artemistechnica.federation.models.SampleModel;
 import com.artemistechnica.federation.models.ServiceResponse;
-import com.artemistechnica.federation.services.Federation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +22,7 @@ public class PipelineController implements PipelineApi, Federation {
                 ServiceResponse.mk(
                         federate(HelperFunctions::identity)
                                 .apply(Federation.Context.mk(UUID.randomUUID().toString()))
-                                .flatMapE(mat -> mat.materialize(c -> SampleModel.mk("SUCCESS", c.value)))
+                                .flatMapE(mat -> mat.materialize(c -> new SimpleData("SUCCESS", c.value)))
                                 .map(Envelope::mkSuccess).right.orElse(Envelope.mkFailure(String.format("Error: %s", UUID.randomUUID())))
                 )
         );
@@ -35,7 +34,7 @@ public class PipelineController implements PipelineApi, Federation {
                 ServiceResponse.mk(
                         federate(ctx ->  { throw new RuntimeException("Exception raised!"); })
                                 .apply(Federation.Context.mk(UUID.randomUUID().toString()))
-                                .flatMapE(mat -> mat.materialize(c -> SampleModel.mk("SUCCESS", c.value)))
+                                .flatMapE(mat -> mat.materialize(c -> new SimpleData("SUCCESS", c.value)))
                                 .resolve(
                                         error -> Envelope.mkFailure(String.format("Materialized error: %s", error.error)),
                                         model -> Envelope.mkSuccess(model)

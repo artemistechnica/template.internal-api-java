@@ -73,10 +73,10 @@ openApiGenerate {
 	// Disables the default interface method (e.g. getRequest)
 	configOptions.put("skipDefaultInterface", "true")
 	// The import/schema mappings map from schema models to concrete implementations
-	importMappings.put("SimpleDataResponse", "com.artemistechnica.federation.models.ServiceResponse")
-	schemaMappings.put("SimpleDataResponse", "com.artemistechnica.federation.models.ServiceResponse")
-	schemaMappings.put("EnvelopeError", "com.artemistechnica.federation.models.ServiceResponse")
-	importMappings.put("EnvelopeError", "com.artemistechnica.federation.models.ServiceResponse")
+	importMappings.put("SimpleDataResponse", "com.artemistechnica.commons.datatypes.Envelope")
+	schemaMappings.put("SimpleDataResponse", "com.artemistechnica.commons.datatypes.Envelope")
+	schemaMappings.put("EnvelopeError", "com.artemistechnica.commons.datatypes.Envelope")
+	importMappings.put("EnvelopeError", "com.artemistechnica.commons.datatypes.Envelope")
 }
 
 // Add generated sources to classpath

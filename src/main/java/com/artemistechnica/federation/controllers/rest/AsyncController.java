@@ -8,7 +8,6 @@ import com.artemistechnica.commons.utils.HelperFunctions;
 import com.artemistechnica.commons.utils.Threads;
 import com.artemistechnica.federation.generated.example.api.AsyncApi;
 import com.artemistechnica.federation.generated.example.models.SimpleData;
-import com.artemistechnica.federation.models.ServiceResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,45 +25,41 @@ import java.util.stream.IntStream;
 public class AsyncController implements AsyncApi {
 
     @Override
-    public ResponseEntity<ServiceResponse> getAsyncError() {
+    public ResponseEntity<Envelope> getAsyncError() {
         return ResponseEntity.internalServerError().body(
-                ServiceResponse.mk(
-                        EitherE.success(Pair.pair(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
-                                .mapAsyncE(pair -> new SimpleData(pair.left, pair.right))
-                                // Need to explicitly parameterize with <SampleModel> since we're purposefully throwing an exception
-                                .<SimpleData>mapAsyncE(model -> { throw new RuntimeException(String.format("Error raised processing model with values: %s and %s", model.getValueA(), model.getValueB())); })
-                                .materialize()
-                                .resolve(
-                                        // Handle the error
-                                        err     -> Envelope.mkFailure(err.error),
-                                        // Handle the success
-                                        model   -> Envelope.mkSuccess(model)
-                                )
-                )
+                EitherE.success(Pair.pair(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
+                        .mapAsyncE(pair -> new SimpleData(pair.left, pair.right))
+                        // Need to explicitly parameterize with <SimpleData> since we're purposefully throwing an exception
+                        .<SimpleData>mapAsyncE(model -> { throw new RuntimeException(String.format("Error raised processing model with values: %s and %s", model.getValueA(), model.getValueB())); })
+                        .materialize()
+                        .resolve(
+                                // Handle the error
+                                err     -> Envelope.mkFailure(err.error),
+                                // Handle the success
+                                model   -> Envelope.mkSuccess(model)
+                        )
         );
     }
 
     @Override
-    public ResponseEntity<ServiceResponse> getAsync() {
+    public ResponseEntity<Envelope> getAsync() {
         return ResponseEntity.ok(
-                ServiceResponse.mk(
-                        EitherE.success(Pair.pair(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
-                                .mapAsyncE(pair -> new SimpleData(pair.left, pair.right))
-                                // Materialize the result from the [[CompletableFutureE]]
-                                .materialize()
-                                // Materialize an [[Envelope]] from an [[EitherE]]
-                                .resolve(
-                                        // Handle the error
-                                        err     -> { log.error(err.error); return Envelope.mkFailure(err.error); },
-                                        // Handle the success
-                                        model   -> Envelope.mkSuccess(model)
-                                )
-                )
+                EitherE.success(Pair.pair(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
+                        .mapAsyncE(pair -> new SimpleData(pair.left, pair.right))
+                        // Materialize the result from the [[CompletableFutureE]]
+                        .materialize()
+                        // Materialize an [[Envelope]] from an [[EitherE]]
+                        .resolve(
+                                // Handle the error
+                                err     -> { log.error(err.error); return Envelope.mkFailure(err.error); },
+                                // Handle the success
+                                model   -> Envelope.mkSuccess(model)
+                        )
         );
     }
 
     @Override
-    public ResponseEntity<ServiceResponse> getAsyncLong() {
+    public ResponseEntity<Envelope> getAsyncLong() {
         // TODO Major refactor. Look at condensing and adding to commons-java (i.e. map reduce)
 
         List<Integer> workerCount         = IntStream.rangeClosed(1, 10).boxed().toList();
@@ -104,10 +99,6 @@ public class AsyncController implements AsyncApi {
                         )
                 ).toList();
 
-        return ResponseEntity.ok(
-                ServiceResponse.mk(
-                        Envelope.mkSuccess(models.toArray(new SimpleData[0]))
-                )
-        );
+        return ResponseEntity.ok(Envelope.mkSuccess(models.toArray(new SimpleData[0])));
     }
 }
